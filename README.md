@@ -49,7 +49,7 @@ Update .env According to your Database Name
 
 ## Seeding Data
 ```bash
-node npm run db:reset
+npm run db:reset
 ```
 
 
