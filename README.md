@@ -47,6 +47,12 @@ Create database: university
 
 Update .env According to your Database Name
 
+## Seeding Data
+```bash
+node npm run db:reset
+```
+
+
 ## Running the Server
 ```bash
 node server.js
