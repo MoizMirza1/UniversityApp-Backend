@@ -1,14 +1,26 @@
+const { faker } = require('@faker-js/faker');
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 async function seedUsers() {
   try {
+    // Remove all old users
     await User.deleteMany();
-    
-    const users = [
-      { name: 'Admin', email: 'admin@example.com', role: 'admin', password: 'password123' },
-      { name: 'John Doe', email: 'john@example.com', role: 'student', password: 'password123' },
-      // ... other users
-    ];
+
+    const roles = ['admin', 'student'];
+    const users = [];
+
+    for (let i = 0; i < 5; i++) {
+      const plainPassword = 'password123';
+      const hashedPassword = await bcrypt.hash(plainPassword, 12);
+
+      users.push({
+        name: faker.person.fullName(),
+        email: faker.internet.email().toLowerCase(),
+        role: roles[Math.floor(Math.random() * roles.length)],
+        password: hashedPassword,
+      });
+    }
 
     const result = await User.insertMany(users);
     console.log(`👥 Seeded ${result.length} users`);

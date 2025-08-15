@@ -43,6 +43,9 @@ exports.createCourse = async (req, res, next) => {
       }
     });
   } catch (err) {
+    if (err.code === 11000) {
+      return next(new AppError('Course code already exists', 400));
+    }
     next(err);
   }
 };
