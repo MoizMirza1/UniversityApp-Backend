@@ -6,10 +6,11 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 // Public routes
-router.get("/", courseController.getAllCourses);
-router.get("/:id", courseController.getCourse);
+router.get("/courses", courseController.getAllCourses);
+router.get("/courses/:id", courseController.getCourse);
 
 // Admin-only routes
-router.post("/", authMiddleware.protect,  authMiddleware.restrictTo("admin"),  courseController.createCourse );
+router.post("/courses", authMiddleware.protect,  authMiddleware.restrictTo("admin"),  courseController.createCourse );
+
 
 module.exports = router;
