@@ -12,6 +12,9 @@ router.get("/courses/:id", courseController.getCourse);
 // Admin-only routes
 router.post("/courses", authMiddleware.protect,  authMiddleware.restrictTo("admin"),  courseController.createCourse );
 
+router.put(  "/courses/:id", authMiddleware.protect, authMiddleware.restrictTo("admin"), courseController.updateCourse
+);
+
 router.delete( "/courses/:id", authMiddleware.protect,  authMiddleware.restrictTo("admin"),courseController.deleteCourse);
 
 
