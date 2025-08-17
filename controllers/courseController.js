@@ -71,3 +71,23 @@ exports.getCourse = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deleteCourse = async (req, res, next) => {
+  try {
+    const course = await Course.findByIdAndDelete(req.params.id);
+
+    if (!course) {
+      return next(new AppError('No course found with that ID', 404));
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Course deleted successfully',
+      data: null
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
