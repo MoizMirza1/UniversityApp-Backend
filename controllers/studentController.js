@@ -1,4 +1,7 @@
 const Student = require('../models/Student');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
+
 const AppError = require('../utils/appError');
 
 // Get all students
@@ -16,28 +19,35 @@ exports.getAllStudents = async (req, res, next) => {
   }
 };
 
-// Create student
 exports.createStudent = async (req, res, next) => {
   try {
-    if (req.user.role !== 'admin') {
-      return next(
-        new AppError('You do not have permission to perform this action', 403)
-      );
-    }
+    const studentData = req.body;
 
-    const student = await Student.create(req.body);
+    // 1. Create Student record
+    const student = await Student.create(studentData);
+
+    // 2. Hash default password (student rollNumber)
+    const hashedPassword = await bcrypt.hash(student.rollNumber, 12);
+
+    // 3. Create User record for login
+    await User.create({
+      email: student.email,
+      name: `${student.firstName} ${student.lastName}`,
+      password: student.rollNumber,
+      role: "student",
+    });
 
     res.status(201).json({
-      status: 'success',
+      status: "success",
+      message: "Student and User created successfully",
       data: { student }
     });
-  } catch (err) {
-    if (err.code === 11000) {
-      return next(new AppError('Email already exists', 400));
-    }
-    next(err);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: error.message });
   }
 };
+
 
 // Get single student
 exports.getStudent = async (req, res, next) => {
