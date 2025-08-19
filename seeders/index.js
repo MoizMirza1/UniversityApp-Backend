@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const seedUsers = require('./seedUsers');
 const seedCourses = require('./seedCourses');
+const seedStudents = require('./seedStudents');
 
 
 const runSeeders = async () => {
@@ -12,6 +13,7 @@ const runSeeders = async () => {
 
     await seedUsers();
     await seedCourses();
+    await seedStudents();
 
     console.log('🎯 All data seeded successfully!');
     await mongoose.disconnect();
