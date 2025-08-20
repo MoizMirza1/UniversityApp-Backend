@@ -1,4 +1,7 @@
 const Student = require('../models/Student');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
+
 const AppError = require('../utils/appError');
 
 // Get all students
@@ -16,28 +19,38 @@ exports.getAllStudents = async (req, res, next) => {
   }
 };
 
-// Create student
 exports.createStudent = async (req, res, next) => {
   try {
-    if (req.user.role !== 'admin') {
-      return next(
-        new AppError('You do not have permission to perform this action', 403)
-      );
-    }
+    const studentData = req.body;
 
-    const student = await Student.create(req.body);
+    // 1. Create Student record
+    const student = await Student.create(studentData);
+
+    // 2. Hash default password (student rollNumber)
+    const hashedPassword = await bcrypt.hash(student.rollNumber, 12);
+
+    // 3. Create User record for login
+    const user = await User.create({
+      email: student.email,
+      name: `${student.firstName} ${student.lastName}`,
+      password: student.rollNumber,
+      role: "student",
+    });
+
+    student.userId = user._id;
+    await student.save();
 
     res.status(201).json({
-      status: 'success',
+      status: "success",
+      message: "Student and User created successfully",
       data: { student }
     });
-  } catch (err) {
-    if (err.code === 11000) {
-      return next(new AppError('Email already exists', 400));
-    }
-    next(err);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: error.message });
   }
 };
+
 
 // Get single student
 exports.getStudent = async (req, res, next) => {
@@ -96,18 +109,27 @@ exports.deleteStudent = async (req, res, next) => {
       );
     }
 
-    const student = await Student.findByIdAndDelete(req.params.id);
-
+    // 1. Find student first
+    const student = await Student.findById(req.params.id);
     if (!student) {
       return next(new AppError('No student found with that ID', 404));
     }
 
+    // 2. Delete related User
+    if (student.userId) {
+      await User.findByIdAndDelete(student.userId);
+    }
+
+    // 3. Delete student
+    await Student.findByIdAndDelete(req.params.id);
+
     res.status(200).json({
       status: 'success',
-      message: 'Student deleted successfully',
+      message: 'Student and related User deleted successfully',
       data: null
     });
   } catch (err) {
     next(err);
   }
 };
+
