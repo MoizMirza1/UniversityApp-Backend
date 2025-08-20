@@ -30,12 +30,15 @@ exports.createStudent = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(student.rollNumber, 12);
 
     // 3. Create User record for login
-    await User.create({
+    const user = await User.create({
       email: student.email,
       name: `${student.firstName} ${student.lastName}`,
       password: student.rollNumber,
       role: "student",
     });
+
+    student.userId = user._id;
+    await student.save();
 
     res.status(201).json({
       status: "success",
@@ -106,18 +109,27 @@ exports.deleteStudent = async (req, res, next) => {
       );
     }
 
-    const student = await Student.findByIdAndDelete(req.params.id);
-
+    // 1. Find student first
+    const student = await Student.findById(req.params.id);
     if (!student) {
       return next(new AppError('No student found with that ID', 404));
     }
 
+    // 2. Delete related User
+    if (student.userId) {
+      await User.findByIdAndDelete(student.userId);
+    }
+
+    // 3. Delete student
+    await Student.findByIdAndDelete(req.params.id);
+
     res.status(200).json({
       status: 'success',
-      message: 'Student deleted successfully',
+      message: 'Student and related User deleted successfully',
       data: null
     });
   } catch (err) {
     next(err);
   }
 };
+

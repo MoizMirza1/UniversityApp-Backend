@@ -58,7 +58,9 @@ const StudentSchema = new mongoose.Schema({
     default: "no-photo.jpg",
   },
   status: { type: String,
-    enum: ["active", "graduated", "suspended"], default: "active" }
+    enum: ["active", "graduated", "suspended"], default: "active" },
+
+  userId: {type: mongoose.Schema.Types.ObjectId, ref: "User",  }
 },
     { timestamps: true });
 
