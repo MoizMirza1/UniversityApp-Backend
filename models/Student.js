@@ -28,9 +28,9 @@ const StudentSchema = new mongoose.Schema({
     default: Date.now,
   },
   department: {
-    type: String,
-    enum: ["Computer Science", "Software", "AI", "Cyber Security"],
-    required: true,
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Department",
+  required: true,
   },
   gender: {
     type: String,
