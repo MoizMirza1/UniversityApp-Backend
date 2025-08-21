@@ -4,6 +4,7 @@ require('dotenv').config();
 const seedUsers = require('./seedUsers');
 const seedCourses = require('./seedCourses');
 const seedStudents = require('./seedStudents');
+const seedDepartments = require('./seedDepartments'); 
 
 
 const runSeeders = async () => {
@@ -13,6 +14,7 @@ const runSeeders = async () => {
 
     await seedUsers();
     await seedCourses();
+    await seedDepartments(); 
     await seedStudents();
 
     console.log('🎯 All data seeded successfully!');
