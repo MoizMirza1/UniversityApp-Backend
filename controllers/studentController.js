@@ -1,13 +1,18 @@
 const Student = require('../models/Student');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-
+const Department = require('../models/Department')
 const AppError = require('../utils/appError');
 
 // Get all students
 exports.getAllStudents = async (req, res, next) => {
   try {
-    const students = await Student.find();
+    // const students = await Student.find();
+    const students = await Student.find().populate({
+      path:  "department",
+      select:   "name code"
+    }
+    );
 
     res.status(200).json({
       status: 'success',
@@ -19,21 +24,67 @@ exports.getAllStudents = async (req, res, next) => {
   }
 };
 
+async function generateRollNumber(departmentId) {
+  const department = await Department.findById(departmentId);
+  if (!department) throw new AppError("Invalid department ID", 400);
+
+  const year = new Date().getFullYear();
+
+  // Count existing students in department for this year
+  const count = await Student.countDocuments({
+    department: departmentId,
+    createdAt: {
+      $gte: new Date(`${year}-01-01`),
+      $lte: new Date(`${year}-12-31`)
+    }
+  });
+
+  const nextNumber = String(count + 1).padStart(3, "0");
+  return `${department.code}-${year}-${nextNumber}`;
+}
+
+// ✅ Preview roll number (UX before creating)
+
+    // GET API --   http://localhost:8000/api/preview-roll?departmentId=68a6390cc5131d50c189a4d0
+    
+exports.previewRollNumber = async (req, res, next) => {
+  try {
+    const { departmentId } = req.query;
+    if (!departmentId) return next(new AppError("departmentId required", 400));
+    const rollNumber = await generateRollNumber(departmentId);
+
+    res.status(200).json({
+      status: "success",
+      data: { rollNumber }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ✅ Create Student + User
 exports.createStudent = async (req, res, next) => {
   try {
-    const studentData = req.body;
+    const { departmentId, ...studentData } = req.body;
 
-    // 1. Create Student record
-    const student = await Student.create(studentData);
+    const department = await Department.findById(departmentId);
+    if (!department) return next(new AppError("Invalid department ID", 400));
 
-    // 2. Hash default password (student rollNumber)
-    const hashedPassword = await bcrypt.hash(student.rollNumber, 12);
+    // Generate roll number
+    const rollNumber = await generateRollNumber(departmentId);
 
-    // 3. Create User record for login
+    // Create student
+    const student = await Student.create({
+      ...studentData,
+      rollNumber,
+      department: departmentId,
+    });
+
+    // Create linked User
     const user = await User.create({
       email: student.email,
       name: `${student.firstName} ${student.lastName}`,
-      password: student.rollNumber,
+      password: rollNumber, // default password = roll number
       role: "student",
     });
 
@@ -42,20 +93,21 @@ exports.createStudent = async (req, res, next) => {
 
     res.status(201).json({
       status: "success",
-      message: "Student and User created successfully",
-      data: { student }
+      message: "Student created successfully",
+      data: { student, user }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: "error", message: error.message });
+    next(error);
   }
 };
-
 
 // Get single student
 exports.getStudent = async (req, res, next) => {
   try {
-    const student = await Student.findById(req.params.id);
+     const student = await Student.findById(req.params.id).populate({
+      path: "department",
+      select: "name code"
+    });
 
     if (!student) {
       return next(new AppError('No student found with that ID', 404));
