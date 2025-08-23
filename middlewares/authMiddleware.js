@@ -20,8 +20,17 @@ exports.protect = async (req, res, next) => {
     }
 
     // 2) Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+   let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({ status: 'fail', message: 'Token expired. Please log in again.' });
+      } else {
+        return res.status(401).json({ status: 'fail', message: 'Invalid token. Please log in.' });
+      }
+    }
+    
     // 3) Check if user still exists
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
