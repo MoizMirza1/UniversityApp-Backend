@@ -7,7 +7,6 @@ exports.login = async (req, res, next) => {
     console.log("Incoming login request");
     const { email, password } = req.body;
     
-    // 1) Check if email and password exist
     if (!email || !password) {
       console.log("Missing credentials");
       return res.status(400).json({
@@ -16,7 +15,6 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // 2) Check if user exists && password is correct
     const user = await User.findOne({ email }).select('+password');
     console.log("User found:", user?.email);
     if (!user || !(await user.correctPassword(password, user.password))) {
@@ -29,14 +27,12 @@ exports.login = async (req, res, next) => {
       
     }
 
-    // 3) Create token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-    // 4) Send response
     res.status(200).json({
       status: 'success',
       token,
@@ -113,6 +109,23 @@ exports.getCurrentUser = async (req, res, next) => {
       status: 'success',
       data: {
         user: currentUser
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.verifyToken = (req, res, next) => {
+  try {
+    res.status(200).json({
+      status: 'success',
+      message: 'Token valid',
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role
       }
     });
   } catch (err) {
