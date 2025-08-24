@@ -8,6 +8,7 @@ const router = express.Router();
 router.get("/students", studentController.getAllStudents);
 router.get("/students/:id", studentController.getStudent);
 router.get("/preview-roll", studentController.previewRollNumber);
+router.get("/DepartmentByStudent", studentController.DepartmentByStudent);
 
 // Admin-only routes
 router.post("/students",  authMiddleware.protect,authMiddleware.restrictTo("admin"),  studentController.createStudent);
