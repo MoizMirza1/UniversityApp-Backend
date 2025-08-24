@@ -20,7 +20,7 @@ exports.getAllStudents = async (req, res, next) => {
       data: { students }
     });
   } catch (err) {
-    // next(err);
+    next(err);
   }
 };
 
@@ -133,19 +133,20 @@ exports.createStudent = async (req, res, next) => {
     // Generate roll number
     const rollNumber = await generateRollNumber(departmentId);
 
-    // Create student
+    
     const student = await Student.create({
       ...studentData,
       rollNumber,
       department: departmentId,
     });
 
-    // Create linked User
+   
     const user = await User.create({
       email: student.email,
       name: `${student.firstName} ${student.lastName}`,
-      password: rollNumber, // default password = roll number
+      password: rollNumber, 
       role: "student",
+      profileImage: student.image,
     });
 
     student.userId = user._id;
@@ -161,7 +162,7 @@ exports.createStudent = async (req, res, next) => {
   }
 };
 
-// Get single student
+
 exports.getStudent = async (req, res, next) => {
   try {
      const student = await Student.findById(req.params.id).populate({
@@ -182,7 +183,6 @@ exports.getStudent = async (req, res, next) => {
   }
 };
 
-// Update student
 exports.updateStudent = async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') {
@@ -227,7 +227,7 @@ exports.updateStudent = async (req, res, next) => {
   }
 };
 
-// Delete student
+
 exports.deleteStudent = async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') {
@@ -236,18 +236,18 @@ exports.deleteStudent = async (req, res, next) => {
       );
     }
 
-    // 1. Find student first
+   
     const student = await Student.findById(req.params.id);
     if (!student) {
       return next(new AppError('No student found with that ID', 404));
     }
 
-    // 2. Delete related User
+    
     if (student.userId) {
       await User.findByIdAndDelete(student.userId);
     }
 
-    // 3. Delete student
+    
     await Student.findByIdAndDelete(req.params.id);
 
     res.status(200).json({

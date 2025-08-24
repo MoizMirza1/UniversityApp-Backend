@@ -1,5 +1,6 @@
 const Course = require('../models/Course');
 const AppError = require('../utils/appError');
+const { generateCourseCode } = require('../utils/courseCodeGenerator');
 
 exports.getAllCourses = async (req, res, next) => {
   try {
@@ -20,32 +21,59 @@ exports.getAllCourses = async (req, res, next) => {
   }
 };
 
+// controllers/courseController.js
+
 exports.createCourse = async (req, res, next) => {
   try {
-    // Only admin can create courses
-    if (req.user.role !== 'admin') {
+    if (req.user.role !== "admin") {
       return next(
-        new AppError('You do not have permission to perform this action', 403)
+        new AppError("You do not have permission to perform this action", 403)
       );
     }
 
-    // // Handle file upload if image exists
-    // if (req.file) {
-    //   req.body.image = req.file.filename;
-    // }
+    const { title, department, level } = req.body;
 
-    const course = await Course.create(req.body);
+    // 2. Check if course with same title + dept + level already exists
+    const existing = await Course.findOne({ title, department, level });
+    if (existing) {
+      return res.status(400).json({
+        status: "fail",
+        message:
+          "Course with same title already exists in this department and level",
+      });
+    }
 
-    res.status(201).json({
+    // 3. Generate course code
+    const courseCode = await generateCourseCode(department, level);
+
+    // 4. Create course
+    const course = await Course.create({
+      ...req.body,
+      courseCode,
+    });
+
+    res.status(201).json({ status: "success", data: course });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+// GET http://localhost:8000/api/courses/preview?departmentId=<dep_id>&level=<level>
+// http://localhost:8000/api/courses/preview?departmentId=68a7099390ecabf884dab25c&level=2
+exports.previewCourseCode = async (req, res, next) => {
+  try {
+    const { departmentId, level } = req.query;
+    if (!departmentId || !level) {
+      return next(new AppError('Department and level are required for preview', 400));
+    }
+
+    const previewCode = await generateCourseCode(departmentId, level);
+    res.status(200).json({
       status: 'success',
-      data: {
-        course
-      }
+      data: { courseCode: previewCode }
     });
   } catch (err) {
-    if (err.code === 11000) {
-      return next(new AppError('Course code already exists', 400));
-    }
     next(err);
   }
 };
