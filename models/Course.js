@@ -8,9 +8,17 @@ const CourseSchema = new mongoose.Schema({
   },
   courseCode: {
     type: String,
+     unique: true,
     required: true,
-    unique: true
   },
+  level: {
+    type: Number,
+    required: [true, 'Please add a course level']
+  },
+  department: {
+    type: mongoose.Schema.Types.ObjectId, ref: 'Department',required: true, index: true
+  },
+
   description: {
     type: String,
     required: true
@@ -54,7 +62,9 @@ const CourseSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
-});
+  },
+},
+  { timestamps: true });
+
 
 module.exports = mongoose.model('Course', CourseSchema);
