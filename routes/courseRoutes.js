@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Public routes
 router.get("/courses/preview", courseController.previewCourseCode);
+router.get('/department/:departmentId', courseController.getCoursesByDepartment);
 
 router.get("/courses", courseController.getAllCourses);
 router.get("/courses/:id", courseController.getCourse);
