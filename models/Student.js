@@ -57,6 +57,11 @@ const StudentSchema = new mongoose.Schema({
     type: String,
     default: "no-photo.jpg",
   },
+
+  currentSemester: { type: Number, default: 1 },
+
+  // enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId,ref: 'Course'}],
+ 
   status: { type: String,
     enum: ["active", "graduated", "suspended"], default: "active" },
 
