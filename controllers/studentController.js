@@ -1,6 +1,7 @@
 const Student = require('../models/Student');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Course = require('../models/Course')
 const Department = require('../models/Department')
 const AppError = require('../utils/appError');
 
@@ -257,6 +258,36 @@ exports.deleteStudent = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+};
+
+
+                      //  For Student Dashboard Apis
+
+
+exports.getSemesterCourses = async (req, res, next) => {
+  try {
+    const student = req.student; // already set by authMiddleware
+
+    if (!student) {
+      return next(new AppError("Student not found", 404));
+    }
+
+    // Fetch courses based on department + current semester
+    const courses = await Course.find({
+      department: student.department, 
+      level: student.currentSemester
+    });
+
+    console.log(courses)
+
+    res.status(200).json({
+      status: "success",
+      results: courses.length,
+      data: { courses }
+    });
+  } catch (err) {
+      next(err)
   }
 };
 

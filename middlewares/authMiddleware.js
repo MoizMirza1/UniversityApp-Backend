@@ -1,6 +1,7 @@
 // middlewares/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Student = require('../models/Student'); 
 
 exports.protect = async (req, res, next) => {
   try {
@@ -39,13 +40,26 @@ exports.protect = async (req, res, next) => {
         message: 'The user belonging to this token no longer exists.'
       });
     }
-
-    // 4) Grant access to protected route
+    
     req.user = currentUser;
-    next();
-  } catch (err) {
+   
+
+    if (currentUser.role === 'student') {
+      const student = await Student.findOne({ userId: currentUser._id })
+        .populate('department', 'name code'); 
+      if (!student) {
+        return res.status(404).json({
+          status: 'fail',
+          message: 'Student record not found'
+        });
+      }
+      req.student = student; 
+    }
+
+     next();
+     } catch (err) {
     next(err);
-  }
+    }  
 };
 
 exports.restrictTo = (...roles) => {

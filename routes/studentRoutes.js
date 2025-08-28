@@ -17,4 +17,10 @@ router.put( "/students/:id",  authMiddleware.protect,authMiddleware.restrictTo("
  
 router.delete(  "/students/:id",authMiddleware.protect,  authMiddleware.restrictTo("admin"), studentController.deleteStudent);
 
+
+
+                        // Student Dashboard APIS
+
+router.get(  "/semester-courses",  authMiddleware.protect,studentController.getSemesterCourses);
+
 module.exports = router;
