@@ -134,29 +134,27 @@ exports.createStudent = async (req, res, next) => {
     // Generate roll number
     const rollNumber = await generateRollNumber(departmentId);
 
-    
+    // Create User first
+    const user = await User.create({
+      email: studentData.email,
+      name: `${studentData.firstName} ${studentData.lastName}`,
+      password: rollNumber,
+      role: "student",
+      profileImage: studentData.image,
+    });
+
+    // Create Student linked with User
     const student = await Student.create({
       ...studentData,
       rollNumber,
       department: departmentId,
+      userId: user._id,
     });
-
-   
-    const user = await User.create({
-      email: student.email,
-      name: `${student.firstName} ${student.lastName}`,
-      password: rollNumber, 
-      role: "student",
-      profileImage: student.image,
-    });
-
-    student.userId = user._id;
-    await student.save();
 
     res.status(201).json({
       status: "success",
       message: "Student created successfully",
-      data: { student, user }
+      data: { student, user },
     });
   } catch (error) {
     next(error);
