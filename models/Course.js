@@ -43,10 +43,10 @@ const CourseSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  contactNumber: {
-    type: String,
-    required: true
-  },
+  // contactNumber: {
+  //   type: String,
+  //   required: true
+  // },
   image: {
     type: String,
     default: 'no-photo.jpg'
