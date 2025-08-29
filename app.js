@@ -33,6 +33,7 @@ app.use('/api', require('./routes/authRoutes'));
 app.use('/api', require('./routes/courseRoutes'));
 app.use('/api', require('./routes/studentRoutes'));
 app.use("/api", require("./routes/departmentRoutes.js"));
+app.use("/api", require("./routes/teacherRoutes.js"));
 // app.use('/api/admin', require('./routes/adminRoutes'));
 // app.use('/api/faculty', require('./routes/facultyRoutes'));
 // Error handling middleware

@@ -7,7 +7,7 @@ async function seedUsers() {
     // Remove all old users
     await User.deleteMany();
 
-    const roles = ['admin', 'student'];
+    const roles = ['admin', 'student','teacher'];
     const users = [];
 
     for (let i = 0; i < 5; i++) {
