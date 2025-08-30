@@ -2,24 +2,37 @@ const Course = require('../models/Course');
 const AppError = require('../utils/appError');
 const { generateCourseCode } = require('../utils/courseCodeGenerator');
 
+// controllers/courseController.js
+
+// GET /api/courses?department=68a7099390ecabf884dab25c
+// GET /api/courses?department=68a7099390ecabf884dab25c&level=2
+
 exports.getAllCourses = async (req, res, next) => {
   try {
-    const courses = await Course.find().populate({
-      path: 'students',
-      select: 'name email role'
-    });
+    const filter = {};
+
+    if (req.query.department) {
+      filter.department = req.query.department;
+    }
+    if (req.query.level) {
+      filter.level = req.query.level;
+    }
+
+    const courses = await Course.find(filter)
+      .populate("department", "name code")
+      .populate("professor", "firstName lastName email")
+      .populate("students", "name email role");
 
     res.status(200).json({
-      status: 'success',
+      status: "success",
       results: courses.length,
-      data: {
-        courses
-      }
+      data: { courses },
     });
   } catch (err) {
     next(err);
   }
 };
+
 
 // controllers/courseController.js
 
@@ -103,37 +116,37 @@ exports.getCourse = async (req, res, next) => {
 
 // GET /api/courses/department/68a7099390ecabf884dab25c
 // GET /api/courses/department/68a7099390ecabf884dab25c?level=2
-exports.getCoursesByDepartment = async (req, res, next) => {
-  try {
-    const { departmentId } = req.params;
-    const { level } = req.query;
+// exports.getCoursesByDepartment = async (req, res, next) => {
+//   try {
+//     const { departmentId } = req.params;
+//     const { level } = req.query;
 
-    if (!departmentId) {
-      return next(new AppError("Department ID is required", 400));
-    }
+//     if (!departmentId) {
+//       return next(new AppError("Department ID is required", 400));
+//     }
 
-    // base filter
-    let filter = { department: departmentId };
+//     // base filter
+//     let filter = { department: departmentId };
 
-    // add level filter if provided
-    if (level) {
-      filter.level = level;
-    }
+//     // add level filter if provided
+//     if (level) {
+//       filter.level = level;
+//     }
 
-    const courses = await Course.find(filter).populate({
-      path: "students",
-      select: "name email role",
-    });
+//     const courses = await Course.find(filter).populate({
+//       path: "students",
+//       select: "name email role",
+//     });
 
-    res.status(200).json({
-      status: "success",
-      results: courses.length,
-      data: { courses },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+//     res.status(200).json({
+//       status: "success",
+//       results: courses.length,
+//       data: { courses },
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 
 exports.updateCourse = async (req, res, next) => {
