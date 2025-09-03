@@ -6,17 +6,15 @@ const AppError = require("../utils/appError");
 
 // Get all teachers
 exports.getAllTeachers = async (req, res, next) => {
-  try {
-    const teachers = await Teacher.find().populate("department", "name code");
-    res.status(200).json({
-      status: "success",
-      results: teachers.length,
-      data: { teachers },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+  try { const filter = {};
+   if (req.query.department) { filter.department = req.query.department; }
+    const teachers = await Teacher.find(filter).populate("department", "name code");
+     res.status(200).json({ status: "success", results: teachers.length, data: { teachers },
+     }
+    );
+   }
+     catch (err) 
+     { next(err);} };
 
 // Get single teacher
 exports.getTeacherById = async (req, res, next) => {
