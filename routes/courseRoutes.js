@@ -20,4 +20,15 @@ router.put(  "/courses/:id", authMiddleware.protect, authMiddleware.restrictTo("
 router.delete( "/courses/:id", authMiddleware.protect,  authMiddleware.restrictTo("admin"),courseController.deleteCourse);
 
 
+// Assign Course route
+// routes/courseRoutes.js
+router.put("/courses/:courseId/assign-professor/:teacherId",authMiddleware.protect, authMiddleware.restrictTo("admin"),  courseController.assignProfessorToCourse);
+  
+  
+ 
+
+
+
+
+
 module.exports = router;

@@ -31,6 +31,10 @@ const TeacherSchema = new mongoose.Schema({
     ref: "Department",
     required: true,
   },
+  courses: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Course"
+  }],
   gender: {
     type: String,
     enum: ["Male", "Female", "Other"],

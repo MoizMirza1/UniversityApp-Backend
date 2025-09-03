@@ -113,42 +113,6 @@ exports.getCourse = async (req, res, next) => {
   }
 };
 
-
-// GET /api/courses/department/68a7099390ecabf884dab25c
-// GET /api/courses/department/68a7099390ecabf884dab25c?level=2
-// exports.getCoursesByDepartment = async (req, res, next) => {
-//   try {
-//     const { departmentId } = req.params;
-//     const { level } = req.query;
-
-//     if (!departmentId) {
-//       return next(new AppError("Department ID is required", 400));
-//     }
-
-//     // base filter
-//     let filter = { department: departmentId };
-
-//     // add level filter if provided
-//     if (level) {
-//       filter.level = level;
-//     }
-
-//     const courses = await Course.find(filter).populate({
-//       path: "students",
-//       select: "name email role",
-//     });
-
-//     res.status(200).json({
-//       status: "success",
-//       results: courses.length,
-//       data: { courses },
-//     });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
-
 exports.updateCourse = async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') {
@@ -201,6 +165,37 @@ exports.deleteCourse = async (req, res, next) => {
       status: 'success',
       message: 'Course deleted successfully',
       data: null
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.assignProfessorToCourse = async (req, res, next) => {
+  try {
+    const { courseId, teacherId } = req.params;
+
+    const course = await Course.findById(courseId);
+    if (!course) return next(new AppError("Course not found", 404));
+
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) return next(new AppError("Teacher not found", 404));
+
+    // assign professor
+    course.professor = teacher._id;
+    await course.save();
+
+    // optionally also push to teacher.courses
+    teacher.courses = teacher.courses || [];
+    if (!teacher.courses.includes(course._id)) {
+      teacher.courses.push(course._id);
+      await teacher.save();
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Course assigned to professor",
+      data: { course },
     });
   } catch (err) {
     next(err);

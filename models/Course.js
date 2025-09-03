@@ -35,10 +35,16 @@ const CourseSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  // professor: {
+  //   type: String,
+  //   required: true
+  // },
   professor: {
-    type: String,
-    required: true
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Teacher",
+  required: false  
   },
+
   maxStudents: {
     type: Number,
     required: true
